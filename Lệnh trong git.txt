@@ -1,5 +1,7 @@
 Lệnh trong git
+git commit -m" ": lưu tất cả dữ liệu của staged vào git
 git branch : kiểm tra đang chạy master hay main
 git status: xem trạng thái.
 git add .: đưa hết dư liệu về Staged
 git restore .: lấy lại dữ liệu đã xoá
+git diff: lệnh so sánh

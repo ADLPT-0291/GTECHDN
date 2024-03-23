@@ -13,5 +13,7 @@ git branch <tên nhánh>: tạo nhánh mới
 git checkout (switch) <tên nhánh> : chuyển sang làm việc trên nhánh này
 git switch <tên nhánh> : chuyểnn sang làm việc trên nhánh này
 git merge <tên nhánh> : lệnh gộp dữ liệu, muốn gộp về nhóm nào thì di chuyển về nhóm đó rồi gộp.
+git remote add orgin
+git remote -v :kiểm tra local
 git branch -d <tên nhánh>: xoá nhánh
-xin chào
+git push orgin --all : đẩy tất cả các nhánh lên

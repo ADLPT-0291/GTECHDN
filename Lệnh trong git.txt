@@ -7,3 +7,7 @@ git add .: đưa hết dư liệu về Staged
 git restore .: lấy lại dữ liệu đã xoá
 git diff: lệnh so sánh
 git checkout <mã lấy trong git log>: phục hồi về ban đầu vD: V3 -> V1
+git reset --soft: xoá commit về phần staged chớ không xoá hẳn
+git reset --hard: xoá hẳn commit
+
+ 

@@ -9,5 +9,8 @@ git diff: lệnh so sánh
 git checkout <mã lấy trong git log>: phục hồi về ban đầu vD: V3 -> V1
 git reset --soft: xoá commit về phần staged chớ không xoá hẳn
 git reset --hard: xoá hẳn commit
-
- 
+git branch <tên nhánh>: tạo nhánh mới
+git checkout (switch) <tên nhánh> : chuyển sang làm việc trên nhánh này
+git switch <tên nhánh> : chuyểnn sang làm việc trên nhánh này
+git merge <tên nhánh> : lệnh gộp dữ liệu, muốn gộp về nhóm nào thì di chuyển về nhóm đó rồi gộp.
+git branch -d <tên nhánh>: xoá nhánh

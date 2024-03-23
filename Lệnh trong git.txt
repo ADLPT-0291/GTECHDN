@@ -14,3 +14,4 @@ git checkout (switch) <tên nhánh> : chuyển sang làm việc trên nhánh nà
 git switch <tên nhánh> : chuyểnn sang làm việc trên nhánh này
 git merge <tên nhánh> : lệnh gộp dữ liệu, muốn gộp về nhóm nào thì di chuyển về nhóm đó rồi gộp.
 git branch -d <tên nhánh>: xoá nhánh
+xin chào

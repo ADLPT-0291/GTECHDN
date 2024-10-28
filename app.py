@@ -1,75 +1,93 @@
-#1111111111
-# Copyright 2021 HiveMQ GmbH
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-import time
 import paho.mqtt.client as mqtt
-# import vlc
+import ssl
+import json  # Sử dụng thư viện json để tạo chuỗi JSON
 import subprocess
-# Hàm callback được gọi khi nhận được tin nhắn từ MQTT Broker
+
+# Thông tin kết nối MQTT Broker
+broker_address = "dcab58eb6e6a48f48c506685c17bbb52.s1.eu.hivemq.cloud"
+broker_port = 8883  # Cổng MQTT cho kết nối bảo mật (TLS)
+username = "gtechdn"
+password = "gtechdn123"
+
+import subprocess
+
+# Biến toàn cục để lưu tiến trình DarkIce
+darkice_process = None
+
+def turn_on_darkice():
+    global darkice_process
+    if darkice_process is None or darkice_process.poll() is not None:
+        try:
+            darkice_process = subprocess.Popen(['darkice'])
+            print("darkice đã được bật!")
+        except Exception as e:
+            print(f"Lỗi khi khởi động darkice: {e}")
+    else:
+        print("darkice đang chạy!")
+
+def turn_off_darkice():
+    global darkice_process
+    if darkice_process is not None and darkice_process.poll() is None:
+        try:
+            darkice_process.terminate()
+            darkice_process = None
+            print("darkice đã được tắt!")
+        except Exception as e:
+            print(f"Lỗi khi dừng darkice: {e}")
+    else:
+        print("darkice không chạy!")
+
+
+# Hàm callback khi kết nối thành công
+def on_connect(client, userdata, flags, rc):
+    print(f"Đã kết nối tới broker với mã trạng thái {rc}")
+    if rc == 0:
+        client.subscribe("gtechdn/test")
+        print("Đã đăng ký vào topic 'gtechdn/test'")
+    else:
+        print(f"Không thể kết nối, mã lỗi: {rc}")
+
+# Hàm callback khi nhận được một thông điệp
 def on_message(client, userdata, message):
-    # Xác định nội dung của tin nhắn
-    msg = message.payload.decode()
-    if msg == "play_music":
-        # Kích hoạt VLC để phát nhạc
-        subprocess.Popen(["cvlc", "http://stream.gtechdn.vn:8001/sohoavov1"])
+    try:
+        # Giải mã thông điệp JSON
+        payload = message.payload.decode()
+        data = json.loads(payload)
+        
+        # Kiểm tra lệnh và thực hiện bật/tắt darkice
+        if "command" in data:
+            if data["command"] =="1":
+                 print("Đã nhận được lệnh")
+                 turn_on_darkice()
+            elif data["command"] =="2":
+                 turn_off_darkice()
+                 print("Chưa nhận được lệnh")
+            else:
+                print(f"Nhận lệnh không xác định: {data['command']}")
+        else:
+            print("Thông điệp không chứa lệnh hợp lệ.")
+    except json.JSONDecodeError:
+        print("Không thể giải mã thông điệp JSON.")
 
-# setting callbacks for different events to see if it works, print the message etc.
-def on_connect(client, userdata, flags, rc, properties=None):
-    print("CONNACK received with code %s." % rc)
+# Tạo client MQTT
+client = mqtt.Client("gtechdn")
 
-# with this callback you can see if your publish was successful
-def on_publish(client, userdata, mid, properties=None):
-    print("mid: " + str(mid))
+# Cài đặt thông tin xác thực
+client.username_pw_set(username, password)
 
-# print which topic was subscribed to
-def on_subscribe(client, userdata, mid, granted_qos, properties=None):
-    print("Subscribed: " + str(mid) + " " + str(granted_qos))
+# Cài đặt kết nối bảo mật TLS
+client.tls_set(ca_certs=None, certfile=None, keyfile=None, tls_version=ssl.PROTOCOL_TLS)
 
-# print message, useful for checking if it was successful
-def on_message(client, userdata, msg):
-    print(msg.topic + " " + str(msg.qos) + " " + str(msg.payload))
-
-# using MQTT version 5 here, for 3.1.1: MQTTv311, 3.1: MQTTv31
-# userdata is user defined data of any type, updated by user_data_set()
-# client_id is the given name of the client
-# client = paho.Client(client_id="", userdata=None, protocol=paho.MQTTv5)
-# client.on_connect = on_connect
-
-# # enable TLS for secure connection
-# client.tls_set(tls_version=mqtt.client.ssl.PROTOCOL_TLS)
-client = mqtt.Client()
+# Gán callback functions cho các sự kiện
 client.on_connect = on_connect
-
-# enable TLS for secure connection
-client.tls_set(tls_version=mqtt.ssl.PROTOCOL_TLS)
-# set username and password
-client.username_pw_set("gtechdn", "gtechdn123")
-# connect to HiveMQ Cloud on port 8883 (default for MQTT)
-client.connect("ca99add77b634afe8e68917f0339aec6.s1.eu.hivemq.cloud", 8883)
-
-# setting callbacks, use separate functions like above for better visibility
-client.on_subscribe = on_subscribe
 client.on_message = on_message
-client.on_publish = on_publish
 
-# subscribe to all topics of encyclopedia by using the wildcard "#"
-client.subscribe("encyclopedia/#", qos=0)
+# Kết nối tới MQTT broker
+try:
+    client.connect(broker_address, broker_port)
+except Exception as e:
+    print(f"Lỗi kết nối: {e}")
+    exit(1)
 
-# a single publish, this can also be done in loops, etc.
-client.publish("encyclopedia/temperature", payload="hot", qos=1)
-
-# loop_forever for simplicity, here you need to stop the loop manually
-# you can also use loop_start and loop_stop
+# Vòng lặp để duy trì kết nối và nhận thông điệp
 client.loop_forever()
